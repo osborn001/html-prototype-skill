@@ -4,7 +4,7 @@
 
 [中文说明](README.md)
 
-Turn product requirements into a clickable, offline, single-file HTML prototype. Use the skill to design a new flow, make a scoped change to an existing screen, or verify the shipped artifact in a browser. The package follows the [Agent Skills specification](https://agentskills.io/specification).
+Turn product requirements into a clickable, offline, single-file HTML prototype. Use the skill to design a new flow, match an existing screen before making a scoped change, or verify the shipped artifact in a browser. The package follows the [Agent Skills specification](https://agentskills.io/specification).
 
 ## Install
 
