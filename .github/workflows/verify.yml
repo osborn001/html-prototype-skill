@@ -1,0 +1,43 @@
+name: Verify skill
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            install-shell: sh
+          - os: macos-latest
+            install-shell: sh
+          - os: windows-latest
+            install-shell: powershell
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -B tests/check_install.py ${{ matrix.install-shell }}
+      - run: python -B -m unittest discover -s tests -v
+      - run: python html-prototype/scripts/check_offline.py examples/workshop-booking.html
+      - uses: actions/setup-node@v7
+        if: runner.os == 'Linux'
+        with:
+          node-version: '24'
+      - run: npm ci
+        if: runner.os == 'Linux'
+      - run: npx playwright install --with-deps chromium
+        if: runner.os == 'Linux'
+      - run: npm test
+        if: runner.os == 'Linux'

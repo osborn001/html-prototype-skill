@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>邻里工坊 · 预约提示</title>
+<style>
+  :root {
+    color-scheme: light;
+    --background: #f6f5ee;
+    --card: #fffef9;
+    --ink: #202b23;
+    --subtle: #546057;
+    --line: #dddfd3;
+    --green: #284638;
+    --green-dark: #20382d;
+    --green-soft: #e5eee4;
+    --clay: #834b36;
+    --clay-soft: #f5e6da;
+    --focus: #1b6b54;
+    --error: #9b3026;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--background); color: var(--ink); }
+  h1, h2, p { margin: 0; }
+  button, textarea, input { font: inherit; }
+  button {
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-weight: 650;
+    padding: 9px 16px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active { opacity: .78; }
+  button:focus-visible, textarea:focus-visible, input:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .topbar {
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1152px;
+    min-height: 76px;
+    padding: 12px clamp(16px, 5vw, 54px);
+    margin: auto;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 1.13rem;
+    font-weight: 780;
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  .brand-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    background: var(--green);
+    position: relative;
+  }
+  .brand-icon::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1.5px solid #f8f2d7;
+    border-top-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+  }
+  .brand-icon::after {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 1.5px;
+    background: #f8f2d7;
+    left: 9px;
+    top: 15px;
+    transform: rotate(-45deg);
+  }
+  .view-switch {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: #efefe7;
+    border: 1px solid #e5e5db;
+    border-radius: 13px;
+  }
+  .view-switch button {
+    border-radius: 9px;
+    padding: 8px 15px;
+    white-space: nowrap;
+  }
+  .view-switch button[aria-pressed="true"] {
+    border-color: #dedfd4;
+    background: var(--card);
+    color: var(--green-dark);
+    box-shadow: 0 1px 3px #26382715;
+  }
+  .view-switch button[aria-pressed="false"]:hover { background: #e6e8df; }
+
+  main {
+    max-width: 1152px;
+    margin: 0 auto;
+    padding: clamp(28px, 6vw, 72px) clamp(16px, 5vw, 54px) 72px;
+  }
+  .intro { margin-bottom: 30px; }
+  h1 {
+    font-size: clamp(1.85rem, 4vw, 2.7rem);
+    line-height: 1.2;
+    letter-spacing: -.035em;
+    font-weight: 760;
+  }
+  .intro p { margin-top: 12px; color: var(--subtle); }
+  .room-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .room-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: clamp(16px, 3.2vw, 30px);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--card);
+    box-shadow: 0 8px 22px #414e3208;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .room-mark {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 1.18rem;
+    font-weight: 750;
+    background: var(--green-soft);
+    color: var(--green);
+  }
+  .room-mark.clay { background: var(--clay-soft); color: var(--clay); }
+  .room-card h2 { font-size: 1.25rem; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: #eeeee8;
+    color: #4f594e;
+    font-size: .875rem;
+    font-weight: 650;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge[data-enabled="true"] { background: var(--green-soft); color: var(--green); }
+  .stored {
+    flex: 1;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+  .stored-heading { color: var(--subtle); font-size: .875rem; margin-bottom: 4px; }
+  .stored-text, .notice-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .stored-text[data-empty="true"] { color: var(--subtle); }
+  .card-action { display: flex; align-items: center; gap: 8px 13px; flex-wrap: wrap; }
+  .saved-feedback { color: var(--green); font-size: .875rem; }
+  .secondary {
+    border-color: #cbd3c8;
+    background: var(--card);
+    color: var(--green-dark);
+  }
+  .secondary:hover { background: var(--green-soft); }
+  .primary { background: var(--green); color: white; }
+  .primary:hover { background: var(--green-dark); }
+
+  .visitor-hero {
+    min-height: 158px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 22px;
+    padding: clamp(19px, 5vw, 42px);
+    color: #fffef5;
+    background:
+      radial-gradient(ellipse at 100% 20%, #49674f, transparent 64%),
+      var(--green);
+    margin-bottom: 24px;
+  }
+  .visitor-hero p { color: #e7eddf; }
+  .room-select {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .room-select button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-align: left;
+    padding: 12px 16px;
+    border-color: var(--line);
+    background: var(--card);
+    box-shadow: 0 4px 12px #414e3208;
+  }
+  .room-select button[aria-pressed="true"] {
+    border-color: var(--green);
+    background: #eef2e8;
+    box-shadow: 0 0 0 1px var(--green) inset;
+  }
+  .room-select button:hover { background: #eef2e8; }
+  .room-select .room-mark { width: 34px; height: 34px; border-radius: 9px; font-size: 1rem; }
+  .notice {
+    margin-top: 20px;
+    padding: clamp(16px, 3vw, 25px);
+    border: 1px solid #cddacc;
+    border-left: 4px solid var(--green);
+    border-radius: 13px;
+    background: #eff4eb;
+  }
+  .notice h2 { font-size: 1.125rem; margin-bottom: 7px; }
+
+  dialog {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    width: min(520px, calc(100% - 24px));
+    max-height: calc(100% - 24px);
+    padding: 0;
+    color: var(--ink);
+    background: var(--card);
+    box-shadow: 0 24px 65px #17201a42;
+    overflow: auto;
+  }
+  dialog::backdrop { background: #1b2f24a1; }
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 18px clamp(16px, 5vw, 26px) 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .dialog-header h2 { font-size: clamp(1.15rem, 4vw, 1.4rem); }
+  .close-button { width: 44px; flex: none; padding: 0; font-size: 1.55rem; line-height: 1; }
+  .close-button:hover { background: var(--green-soft); }
+  .dialog-content { padding: 17px clamp(16px, 5vw, 26px) 20px; }
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    width: fit-content;
+    margin: 0 0 12px;
+    cursor: pointer;
+    font-weight: 650;
+  }
+  input[type="checkbox"] { margin: 0; width: 20px; height: 20px; accent-color: var(--green); }
+  .field-label { display: block; margin-bottom: 6px; font-weight: 650; }
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+    padding: 9px 11px;
+    border: 1px solid #a8b5a9;
+    border-radius: 9px;
+    background: #fff;
+    color: var(--ink);
+    resize: vertical;
+  }
+  textarea[aria-invalid="true"] { border-color: var(--error); }
+  .field-message { margin-top: 6px; font-size: .875rem; color: var(--subtle); }
+  .field-message.error { color: var(--error); font-weight: 650; }
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px clamp(16px, 5vw, 26px) 17px;
+    border-top: 1px solid var(--line);
+    background: #f8f8f1;
+  }
+  .dialog-actions button { min-width: 75px; }
+
+  @media (max-width: 600px) {
+    .topbar-inner { flex-wrap: wrap; min-height: auto; gap: 10px; }
+    .view-switch { width: 100%; }
+    .view-switch button { flex: 1; }
+    .intro { margin-bottom: 22px; }
+    .room-grid { grid-template-columns: 1fr; gap: 12px; }
+    .room-card { border-radius: 15px; gap: 14px; }
+    .visitor-hero { min-height: 130px; }
+  }
+  @media (max-width: 350px) {
+    .room-select { gap: 8px; }
+    .room-select button { gap: 6px; padding-inline: 8px; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="brand-icon" aria-hidden="true"></span>邻里工坊</div>
+    <nav class="view-switch" aria-label="切换视图">
+      <button type="button" id="admin-nav" aria-controls="admin-view" aria-pressed="true">管理视图</button>
+      <button type="button" id="visitor-nav" aria-controls="visitor-view" aria-pressed="false">访客视图</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="admin-view" aria-labelledby="admin-heading">
+    <div class="intro">
+      <h1 id="admin-heading">预约提示管理</h1>
+      <p>设置各房间向访客显示的预约提示。</p>
+    </div>
+    <ul class="room-grid">
+      <li class="room-card" data-room-card="wood">
+        <div class="card-header">
+          <span class="room-mark" aria-hidden="true">木</span>
+          <h2>木工室</h2>
+          <span class="badge" data-status></span>
+        </div>
+        <div class="stored">
+          <p class="stored-heading">已保存的提示</p>
+          <p class="stored-text" data-saved-text></p>
+        </div>
+        <div class="card-action">
+          <button class="secondary" type="button" data-edit="wood" aria-label="设置提示（木工室）">设置提示</button>
+          <p class="saved-feedback" data-feedback role="status"></p>
+        </div>
+      </li>
+      <li class="room-card" data-room-card="clay">
+        <div class="card-header">
+          <span class="room-mark clay" aria-hidden="true">陶</span>
+          <h2>陶艺室</h2>
+          <span class="badge" data-status></span>
+        </div>
+        <div class="stored">
+          <p class="stored-heading">已保存的提示</p>
+          <p class="stored-text" data-saved-text></p>
+        </div>
+        <div class="card-action">
+          <button class="secondary" type="button" data-edit="clay" aria-label="设置提示（陶艺室）">设置提示</button>
+          <p class="saved-feedback" data-feedback role="status"></p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section id="visitor-view" aria-labelledby="visitor-heading" hidden>
+    <div class="visitor-hero">
+      <h1 id="visitor-heading">工坊预约</h1>
+      <p>请选择你要预约的房间。</p>
+    </div>
+    <div class="room-select" role="group" aria-label="选择房间">
+      <button type="button" data-select-room="wood" aria-pressed="true">
+        <span class="room-mark" aria-hidden="true">木</span>木工室
+      </button>
+      <button type="button" data-select-room="clay" aria-pressed="false">
+        <span class="room-mark clay" aria-hidden="true">陶</span>陶艺室
+      </button>
+    </div>
+    <div aria-live="polite" aria-atomic="true">
+      <aside class="notice" id="visitor-notice" aria-labelledby="notice-title" hidden>
+        <h2 id="notice-title">预约提示</h2>
+        <p class="notice-text" id="notice-text"></p>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<dialog id="notice-settings" aria-labelledby="settings-title">
+  <form id="settings-form" novalidate>
+    <div class="dialog-header">
+      <h2 id="settings-title"></h2>
+      <button id="close-settings" class="close-button" type="button" aria-label="关闭设置">×</button>
+    </div>
+    <div class="dialog-content">
+      <label class="check-label" for="notice-enabled">
+        <input type="checkbox" id="notice-enabled" autofocus>
+        启用预约提示
+      </label>
+      <label class="field-label" for="settings-text">提示内容</label>
+      <textarea id="settings-text" rows="4" aria-describedby="field-help"></textarea>
+      <p class="field-message" id="field-help">启用后，提示内容将在该房间的预约页显示。</p>
+      <p class="field-message error" id="field-error" role="alert" hidden>启用预约提示时，请填写提示内容。</p>
+    </div>
+    <div class="dialog-actions">
+      <button id="cancel-settings" type="button" class="secondary">取消</button>
+      <button type="submit" class="primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  'use strict';
+
+  const rooms = {
+    wood: { name: '木工室', enabled: true, text: '请穿包脚鞋，并在预约时段开始前 10 分钟到场。' },
+    clay: { name: '陶艺室', enabled: false, text: '' }
+  };
+
+  const adminView = document.querySelector('#admin-view');
+  const visitorView = document.querySelector('#visitor-view');
+  const adminNav = document.querySelector('#admin-nav');
+  const visitorNav = document.querySelector('#visitor-nav');
+  const visitorNotice = document.querySelector('#visitor-notice');
+  const noticeText = document.querySelector('#notice-text');
+  const roomSelectors = document.querySelectorAll('[data-select-room]');
+  const cards = document.querySelectorAll('[data-room-card]');
+  const dialog = document.querySelector('#notice-settings');
+  const form = document.querySelector('#settings-form');
+  const title = document.querySelector('#settings-title');
+  const enabledInput = document.querySelector('#notice-enabled');
+  const textInput = document.querySelector('#settings-text');
+  const errorMessage = document.querySelector('#field-error');
+
+  let visitorRoomId = 'wood';
+  let editingRoomId;
+  let editorTrigger;
+
+  function renderAdmin() {
+    for (const card of cards) {
+      const room = rooms[card.dataset.roomCard];
+      const status = card.querySelector('[data-status]');
+      const savedText = card.querySelector('[data-saved-text]');
+      status.textContent = room.enabled ? '已启用' : '已关闭';
+      status.dataset.enabled = String(room.enabled);
+      savedText.textContent = room.text || '暂无提示内容';
+      savedText.dataset.empty = String(room.text === '');
+    }
+  }
+
+  function renderVisitor() {
+    const room = rooms[visitorRoomId];
+    for (const selector of roomSelectors) {
+      selector.setAttribute('aria-pressed', String(selector.dataset.selectRoom === visitorRoomId));
+    }
+    visitorNotice.hidden = !room.enabled;
+    noticeText.textContent = room.enabled ? room.text : '';
+  }
+
+  function showView(view) {
+    adminView.hidden = view !== 'admin';
+    visitorView.hidden = view !== 'visitor';
+    adminNav.setAttribute('aria-pressed', String(view === 'admin'));
+    visitorNav.setAttribute('aria-pressed', String(view === 'visitor'));
+  }
+
+  function showFieldError(show) {
+    errorMessage.hidden = !show;
+    if (show) {
+      textInput.setAttribute('aria-invalid', 'true');
+      textInput.setAttribute('aria-describedby', 'field-help field-error');
+    } else {
+      textInput.removeAttribute('aria-invalid');
+      textInput.setAttribute('aria-describedby', 'field-help');
+    }
+  }
+
+  function updateTextRequirement() {
+    textInput.required = enabledInput.checked;
+    if (!enabledInput.checked) showFieldError(false);
+  }
+
+  adminNav.addEventListener('click', () => showView('admin'));
+  visitorNav.addEventListener('click', () => showView('visitor'));
+
+  for (const selector of roomSelectors) {
+    selector.addEventListener('click', () => {
+      visitorRoomId = selector.dataset.selectRoom;
+      renderVisitor();
+    });
+  }
+
+  for (const editButton of document.querySelectorAll('[data-edit]')) {
+    editButton.addEventListener('click', () => {
+      editorTrigger = editButton;
+      editingRoomId = editButton.dataset.edit;
+      const room = rooms[editingRoomId];
+      title.textContent = room.name + '预约提示';
+      enabledInput.checked = room.enabled;
+      textInput.value = room.text;
+      showFieldError(false);
+      updateTextRequirement();
+      dialog.showModal();
+    });
+  }
+
+  enabledInput.addEventListener('change', updateTextRequirement);
+  textInput.addEventListener('input', () => {
+    if (textInput.value.trim()) showFieldError(false);
+  });
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const enabled = enabledInput.checked;
+    const text = textInput.value.trim();
+    if (enabled && !text) {
+      showFieldError(true);
+      textInput.focus();
+      return;
+    }
+
+    const room = rooms[editingRoomId];
+    room.enabled = enabled;
+    room.text = text;
+    renderAdmin();
+    renderVisitor();
+
+    for (const feedback of document.querySelectorAll('[data-feedback]')) {
+      feedback.textContent = '';
+    }
+    const feedback = editorTrigger.closest('[data-room-card]').querySelector('[data-feedback]');
+    dialog.close();
+    feedback.textContent = '预约提示已保存。';
+  });
+
+  document.querySelector('#cancel-settings').addEventListener('click', () => dialog.close());
+  document.querySelector('#close-settings').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    editorTrigger.focus();
+  });
+
+  renderAdmin();
+  renderVisitor();
+</script>
+</body>
+</html>

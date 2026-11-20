@@ -1,0 +1,10 @@
+{
+  "name": "html-prototype-skill",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/demo.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.1"
+  }
+}
