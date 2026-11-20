@@ -4,7 +4,7 @@
 
 [中文说明](README.md)
 
-Turn product requirements into a clickable, offline, single-file HTML prototype. Use the skill to design a new flow, match an existing screen before making a scoped change, or verify the shipped artifact in a browser. The package follows the [Agent Skills specification](https://agentskills.io/specification).
+Turn product requirements into a clickable, offline, single-file HTML prototype. Use the skill to design a new flow, match an existing screen before making a scoped change, or verify the shipped artifact in a browser. One skill covers screenshot measurement, editable HTML implementation, interaction testing and visual comparison. Supply the product rules with the task. The package follows the [Agent Skills specification](https://agentskills.io/specification).
 
 ## Install
 
@@ -31,6 +31,6 @@ For other agents that support the Agent Skills format, use the location specifie
 
 > Use html-prototype to build a booking prototype for a fictional community workshop. Managers can set a booking notice for each room. Visitors only see the active notice for their selected room. Demonstrate saving, discarding and disabling a notice, and deliver one HTML file that runs offline.
 
-The [runnable example and verification steps](examples/README.md) use fictional data. The optional [Python resource checker](html-prototype/scripts/check_offline.py) can flag common separate dependencies. Use a browser to verify visual behavior and exercise the interactions.
+The [runnable example and verification steps](examples/README.md) use fictional data. The optional [verification tools](html-prototype/references/verification.md) check static resources, capture an isolated offline browser session, run an interaction flow, and compare screenshots outside declared change regions.
 
 ![Desktop view of the fictional community workshop demo](examples/workshop-preview.png)

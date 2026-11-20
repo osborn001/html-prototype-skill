@@ -4,10 +4,11 @@
 
 [English guide](README.en.md)
 
-把需求做成**可点击、可离线打开的单文件 HTML 产品原型**。这个 Skill 遵循 [Agent Skills 开放规范](https://agentskills.io/specification)，适用于支持该格式的 Agent。整个 Skill 是一个目录，按需读取参考和脚本。
+把需求做成**可点击、可离线打开的单文件 HTML 产品原型**。这个 Skill 遵循 [Agent Skills 开放规范](https://agentskills.io/specification)，适用于支持该格式的 Agent。同一个 Skill 覆盖截图测量、可编辑页面还原、交互实现和浏览器验收，按需读取参考和运行脚本。业务规则由用户或原页面提供。
 
 | 任务 | 产出 |
 |---|---|
+| 从截图还原 | 确定尺寸和视口，测量锚点，用真实 HTML 和 CSS 重建页面 |
 | 从需求做新原型 | 用户能从入口走到结果，关键状态可触发 |
 | 在原页面上做局部迭代 | 先还原或复用原页面，再加功能。同视口检查原图、基线稿与迭代稿 |
 | 验收现有原型 | 验证保存、回显、取消和数据联动，核对单文件离线交付 |
@@ -74,11 +75,12 @@ fi
 
 ## 本地验证
 
-独立的 Python 检查器可找出常见的外链脚本、样式、字体和图片。本体是 Markdown，启用 Skill 无需安装 Python 或浏览器测试依赖。
+Skill 自带可选验证脚本。Agent 也可以直接使用所在客户端的浏览器工具。
 
-```sh
-python3 html-prototype/scripts/check_offline.py examples/workshop-booking.html
-python3 -B -m unittest discover -s tests -v
-```
+| 工具 | 检查内容 |
+|---|---|
+| [静态资源检查](html-prototype/scripts/check_offline.py) | 查找常见的外链脚本、相对图片、字体和样式依赖 |
+| [离线浏览器检查](html-prototype/scripts/verify_browser.cjs) | 在隔离目录按指定视口打开，截图、测量位置、检查请求与错误，并运行操作断言 |
+| [图片差异检查](html-prototype/scripts/compare_images.py) | 对比同尺寸截图，排除明确的改动区域并量化其余差异 |
 
-Windows 可将 `python3` 换成 `py -3`。浏览器可复跑步骤见[示例验收](examples/README.md)。
+[按参数复跑截图、交互和差异检查](html-prototype/references/verification.md) · [运行公开样例](examples/README.md)
